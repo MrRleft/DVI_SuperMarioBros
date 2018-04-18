@@ -1,6 +1,8 @@
 # DVI_SuperMarioBros
 A demo of SuperMarioBros developed in Quintus
 
+By Rubén Izquierdo Belinchón
+
 1 Introducción
 
 En esta práctica vamos a desarrollar otro videojuego completo clásico utilizando el
