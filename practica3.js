@@ -2,6 +2,9 @@
 
 
 var game = function() {
+	
+
+///////////////////////////////Inicio Quintus/////////////////////////////////////////////////
 	// Set up an instance of the Quintus engine and include
 	// the Sprites, Scenes, Input and 2D module. The 2D module
 	// includes the `TileLayer` class as well as the `2d` componet.
@@ -17,9 +20,13 @@ var game = function() {
 		//	downsampleHeight: 960 // is larger than or equal to 1024x768
 		}).controls().touch();
 
-	Q.preload("mario_small.png");
 	
-	Q.load(["mario_small.png", "mario_small.json"],function() {
+
+///////////////////////////////sprites//////////////////////////////////////////////	
+	
+	//SRITE MARIO
+	Q.preload("mario_small.png");
+	Q.load(["mario_small.png", "mario_small.json", "mainTitle.png"], function() {
 
 		Q.sheet("mario_small", "mario_small.png", "mario_small.json");
 		Q.compileSheets("mario_small.png","mario_small.json");
@@ -34,7 +41,7 @@ var game = function() {
 	 
 	    this._super(p, {
 	      	
-	      	sheet: "mario_small",  // Setting a sprite sheet sets sprite width and height
+	      	sheet: "marioR",  // Setting a sprite sheet sets sprite width and height
 	    //  jumpSpeed: -400,
 	    //	speed: 300,
 	    	x: 150,
@@ -53,24 +60,47 @@ var game = function() {
 	
 	});
 
+///////////////////////////////////CARGA NIVELES////////////////////////////////////////////////////
 
+	//INICIALIZACION
 	Q.loadTMX("levelOK.tmx, sprites.json", function() {
-		Q.stageScene("level1");
+		Q.stageScene("mainTitle");
+		//Q.stageScene("level1");
 	});
 
-	Q.scene("level1",function(stage) {
+
+	//NIVEL 1
+	Q.scene("level1", function(stage) {
 
 		Q.stageTMX("levelOK.tmx",stage);
 		var player = stage.insert(new Q.Mario());
 		stage.add("viewport").follow(Q("Mario").first());
 		stage.viewport.offsetX = -100;
 		stage.viewport.offsetY = 160;
-		//stage.viewport.offsetX;
 
 	});
 
+	//TITULO DEL JUEGO
+	Q.scene("mainTitle", function(stage){
+		
+		var button = new Q.UI.Button({
+			x: Q.width/2, 
+			y: Q.height/2,
+			asset: "mainTitle.png"
 
+		})
+		stage.insert(button);
+		button.on("click",function() {
+			Q.clearStages();
+			Q.stageScene("level1");
+		});
+
+		//stage.add("viewport").centerOn(150,380);;
+	});
 }
+
+
+///////////////////////////////////Cajon de basura///////////////////////////////////////////////////
 /*
 .follow(Q("Mario").first())
 .centerOn(150,380);
