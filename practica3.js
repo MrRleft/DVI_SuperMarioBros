@@ -24,41 +24,78 @@ var game = function() {
 
 ///////////////////////////////sprites//////////////////////////////////////////////	
 	
-	//SRITE MARIO
+	//CARGA DE DATOS
 	Q.preload("mario_small.png");
-	Q.load(["mario_small.png", "mario_small.json", "mainTitle.png"], function() {
+	Q.load(["mario_small.png", "mario_small.json", "mainTitle.png", "goomba.png", "goomba.json"], function() {
 
 		Q.sheet("mario_small", "mario_small.png", "mario_small.json");
 		Q.compileSheets("mario_small.png","mario_small.json");
-//		Q.stageScene("level1");
+		Q.compileSheets("goomba.png", "goomba.json");
+
 	});
 
+	//SPRITE MARIO
 	Q.Sprite.extend("Mario",{
 
 	 
-	  init: function(p) {
+		init: function(p) {
 
-	 
-	    this._super(p, {
-	      	
-	      	sheet: "marioR",  // Setting a sprite sheet sets sprite width and height
-	    //  jumpSpeed: -400,
-	    //	speed: 300,
-	    	x: 150,
-	    	y: 380,
-	    	w: 32,
-	    	h: 32
+		 
+		    this._super(p, {
+		      	
+		      	sheet: "marioR",
+		    	jumpSpeed: -400,
+		    	speed: 300,
+		    	x: 150,
+		    	y: 380,
+		    	w: 32,
+		    	h: 32
 
-	    });
+		    });
 
-	    this.add('2d, platformerControls');
+		    this.add('2d, platformerControls');
 
-	  }
+		},
 
-
+		step: function(dt) {
+		  	
+		  	if(this.p.y > 620){
+		  		this.p.y = 380;
+		  		this.p.x = 150;
+		  	}
+			
+		}
 
 	
 	});
+
+	//SPRITE GOOMBA
+	Q.Sprite.extend("Goomba",{
+
+	 
+		init: function(p) {
+
+		 
+		    this._super(p, {
+		    	sheet: "goomba",
+		    	x: 350,
+		    	y: 380,
+		    	speed: 100
+		    });
+
+		    this.add('2d, bump');
+
+		},
+
+		step: function(dt) {
+
+			
+		}
+
+	
+	});
+
+
 
 ///////////////////////////////////CARGA NIVELES////////////////////////////////////////////////////
 
@@ -74,6 +111,7 @@ var game = function() {
 
 		Q.stageTMX("levelOK.tmx",stage);
 		var player = stage.insert(new Q.Mario());
+		var goomba = stage.insert(new Q.Goomba());
 		stage.add("viewport").follow(Q("Mario").first());
 		stage.viewport.offsetX = -100;
 		stage.viewport.offsetY = 160;
@@ -95,9 +133,13 @@ var game = function() {
 			Q.stageScene("level1");
 		});
 
-		//stage.add("viewport").centerOn(150,380);;
 	});
+////////////////////////////////BUCLE PRINCIPAL//////////////////////////////////////////////
+
+	
+
 }
+
 
 
 ///////////////////////////////////Cajon de basura///////////////////////////////////////////////////
