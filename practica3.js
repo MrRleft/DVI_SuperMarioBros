@@ -12,20 +12,21 @@ var game = function() {
 		development: true,
 		imagePath: "images/",
 		audioPath: "audio/",
-		dataPath: "data/" 
-		}).include("Sprites, Scenes, Input, 2D, Anim, Touch, UI, TMX").setup({
+		audioSupported: [ 'ogg','mp3' ],
+		dataPath: "data/"
+		}).include("Sprites, Scenes, Input, 2D, Audio, Anim, Touch, UI, TMX").setup({
 			width: 320, // Set the default width to 800 pixels
 			height: 480, // Set the default height to 600 pixels
 		//	downsampleWidth: 640, // Halve the pixel density if resolution
 		//	downsampleHeight: 960 // is larger than or equal to 1024x768
-		}).controls().touch();
+		}).controls().touch().enableSound();
 
 	
 
 ///////////////////////////////sprites//////////////////////////////////////////////	
 	
 	//CARGA DE DATOS
-	Q.preload("mario_small.png");
+
 	Q.load(["mario_small.png", "mario_small.json", "mainTitle.png", "goomba.png", "goomba.json", "princess.png", "bloopa.png", "bloopa.json"], function() {
 
 		Q.compileSheets("mario_small.png","mario_small.json");
@@ -61,6 +62,7 @@ var game = function() {
 
 		    this.on("hit.sprite",function(collision) {
 				if(collision.obj.isA("Peach")) {
+				Q.audio.play("music_level_complete.mp3");
 				Q.stageScene("endGame",1, { label: "You Won!" });
 				this.destroy();
 				}
@@ -122,6 +124,7 @@ var game = function() {
 
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
+					Q.audio.play("music_die.mp3");
 					Q.stageScene("endGame",1, { label: "You Died" });
 					collision.obj.destroy();
 					}
@@ -129,8 +132,9 @@ var game = function() {
 
 			this.on("bump.top",function(collision) {
 				if(collision.obj.isA("Mario")) {
+					sheet:"goombaDie";
 					this.play("die");
-					this.destroy();
+					this.on("dead", this, this.destroy());
 				}
 			});
 		},
@@ -179,6 +183,7 @@ var game = function() {
 		 
 		    this._super(p, {
 		    	sheet: "bloopa",
+		    	sprite: "Bloopa_anim",
 		    	x: 200,
 		    	y: 350,
 		    	gravity: 1/4
@@ -189,6 +194,7 @@ var game = function() {
 
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
+					Q.audio.play("music_die.mp3");
 					Q.stageScene("endGame",1, { label: "You Died" });
 					collision.obj.destroy();
 					}
@@ -196,14 +202,21 @@ var game = function() {
 
 			this.on("bump.top",function(collision) {
 				if(collision.obj.isA("Mario")) {
-					this.destroy();
+					sheet:"bloopaDie";
+					this.play("die");
+					this.on("dead", this, this.destroy());
 					}
 			});
 		},
 
 		step: function(dt) {
-			if(this.p.vy == 0 )
-				this.p.vy =  -200;
+
+			if(this.p.vy != 0)
+				this.play("floating_up");
+			else{
+				this.play("standing");
+				this.p.vy =  -300;
+			}
 		}
 		// Listen for a sprite collision, if it's the player,
 		// end the game unless the enemy is hit on top
@@ -226,8 +239,8 @@ var game = function() {
 
 	//Animaciones Goomba
 	Q.animations('Goomba_anim', {
-		run: {frames: [0, 1], rate:1/2},
-		die: {frames:[3]}
+		run: {frames: [0, 1], rate:1/3},
+		die: {frames:[2,2,2,2], rate: 1/2, trigger: "dead"}
 	});
 
 	//Animaciones Bloopa
@@ -235,7 +248,14 @@ var game = function() {
 
 		standing: {frames: [0]},
 		floating_up: {frames: [1]},
-		floating_down: {frames: [2]}
+		die: {frames: [2,2,2,2], rate:1/2, trigger: "dead"}
+	});
+
+///////////////////////////////////AUDIOS///////////////////////////////////////////////////////////
+	//CARGA DE AUDIOS
+	Q.load(["music_die.mp3", "music_level_complete.mp3", "music_main.mp3"], function(){
+
+
 	});
 ///////////////////////////////////CARGA NIVELES////////////////////////////////////////////////////
 
@@ -250,6 +270,7 @@ var game = function() {
 	Q.scene("level1", function(stage) {
 
 		Q.stageTMX("levelOK.tmx",stage);
+		Q.audio.play('music_main.mp3',{ loop: true });
 		var player = stage.insert(new Q.Mario());
 		var goomba = stage.insert(new Q.Goomba());
 		var Peach = stage.insert(new Q.Peach());
@@ -283,7 +304,8 @@ var game = function() {
 	// create a endGame scene that takes in a `label` option
 	// to control the displayed message.
 	Q.scene('endGame',function(stage) {
-	
+
+		Q.audio.stop("music_main.mp3");	
 		var container = stage.insert(new Q.UI.Container({
 		
 			x: Q.width/2, 
