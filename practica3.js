@@ -46,7 +46,8 @@ var game = function() {
 		 
 		    this._super(p, {
 		      	
-		      	sheet: "Mario_anim",
+		      	sheet: "marioR",
+		      	sprite:  "Mario_anim",
 		    	jumpSpeed: -400,
 		    	speed: 300,
 		    	x: 150,
@@ -76,7 +77,20 @@ var game = function() {
 		  		Q.stageScene("endGame",1, { label: "You Died" });
 		  		this.destroy();
 		  	}
-			
+
+		    if(this.p.vy != 0) {
+		    	this.play("fall_" + this.p.direction);
+		    } 
+		  	else if(this.p.vx > 0) {
+		    	this.play("run_right");
+		    } 
+		    else if(this.p.vx < 0) {
+		    	this.play("run_left");
+		    } 
+		    else {
+		    	this.play("Stand_" + this.p.direction);
+		    }
+					
 		}
 /*
 		stomp: function(collision) {
@@ -98,12 +112,13 @@ var game = function() {
 		 
 		    this._super(p, {
 		    	sheet: "goomba",
+		    	sprite: "Goomba_anim",
 		    	x: 1500,
 		    	y: 450,
 		    	vx: 100
 		    });
 
-		    this.add('2d, aiBounce');
+		    this.add('2d, aiBounce, animation');
 
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
@@ -114,14 +129,17 @@ var game = function() {
 
 			this.on("bump.top",function(collision) {
 				if(collision.obj.isA("Mario")) {
+					this.play("die");
 					this.destroy();
-					}
+				}
 			});
 		},
 
 		step: function(dt) {
 
-			
+			if(this.p.vx != 0){
+				this.play("run");
+			}
 		}
 		// Listen for a sprite collision, if it's the player,
 		// end the game unless the enemy is hit on top
@@ -167,7 +185,7 @@ var game = function() {
 
 		    });
 
-		    this.add('2d, aiBounce');
+		    this.add('2d, aiBounce, animation');
 
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
@@ -194,25 +212,31 @@ var game = function() {
 
 ////////////////////////////////////ANIMACIONES/////////////////////////////////////////////////////
 	
+	//Animaciones Mario
 	Q.animations('Mario_anim', {
-		run_right: { frames: [1,2,3,4], rate: 1/15}, 
-		run_left: { frames: [17,16,15], rate:1/15 },
+		run_right: { frames: [1,2,3], rate: 1/10}, 
+		run_left: { frames: [17,16,15], rate:1/10 },
 //		fire_right: { frames: [9,10,10], next: 'stand_right', rate: 1/30, trigger: "fired" },
 //		fire_left: { frames: [20,21,21], next: 'stand_left', rate: 1/30, trigger: "fired" },
-		Stand_right: { frames: [0], rate: 1/5 },
-		Stand_left: { frames: [14], rate: 1/5 },
+		Stand_right: { frames: [0]},
+		Stand_left: { frames: [14] },
 		fall_right: { frames: [4], loop: false },
 		fall_left: { frames: [18], loop: false }
 	});
 
-/*
-	{
-	"marioR":{"sx":0,"sy":0,"tileW":32,"tileH":32,"frames":4},
-	"marioL":{"sx":448,"sy":0,"tileW":32,"tileH":32,"frames":4},
-	"marioDie":{"sx":384,"sy":0,"tileW":32,"tileH":32,"frames":1},
-	"marioJump":{"sx":128,"sy":0,"tileW":32,"tileH":32,"frames":1}
-	}	
-*/
+	//Animaciones Goomba
+	Q.animations('Goomba_anim', {
+		run: {frames: [0, 1], rate:1/2},
+		die: {frames:[3]}
+	});
+
+	//Animaciones Bloopa
+	Q.animations('Bloopa_anim', {
+
+		standing: {frames: [0]},
+		floating_up: {frames: [1]},
+		floating_down: {frames: [2]}
+	});
 ///////////////////////////////////CARGA NIVELES////////////////////////////////////////////////////
 
 	//INICIALIZACION
