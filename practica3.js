@@ -243,6 +243,7 @@ var game = function() {
 					Q.audio.play("coin.mp3");
 					this.p.vy = 100;
 					this.destroy();
+					Q.state.inc("score", 10);
 					}
 			});
 		},
@@ -291,7 +292,6 @@ var game = function() {
 	//CARGA DE AUDIOS
 	Q.load(["music_die.mp3", "music_level_complete.mp3", "music_main.mp3", "coin.mp3"], function(){
 
-
 	});
 ///////////////////////////////////CARGA NIVELES////////////////////////////////////////////////////
 
@@ -306,6 +306,7 @@ var game = function() {
 	Q.scene("level1", function(stage) {
 
 		Q.stageTMX("levelOK.tmx",stage);
+
 		Q.audio.play('music_main.mp3',{ loop: true });
 		var player = stage.insert(new Q.Mario());
 		var goomba = stage.insert(new Q.Goomba());
@@ -330,16 +331,14 @@ var game = function() {
 		stage.insert(button);
 		button.on("click",function() {
 			Q.clearStages();
+			Q.state.reset({ score: 0, lives: 2 });
 			Q.stageScene("level1");
+			Q.stageScene("hud", 3);
 		});
 
 	});
 
 	//GAME OVER
-
-	// To display a game over / game won popup box,
-	// create a endGame scene that takes in a `label` option
-	// to control the displayed message.
 	Q.scene('endGame',function(stage) {
 
 		Q.audio.stop("music_main.mp3");	
@@ -368,12 +367,82 @@ var game = function() {
 		
 		button.on("click",function() {
 			Q.clearStages();
-			Q.stageScene('level1');
+			if( Q.state.get("lives") > 0)
+				Q.stageScene('level1');
+				Q.stageScene("hud", 3);
+			else
+				Q.stageScene('mainTitle');
 		});
 		// Expand the container to visibily fit it's contents
 		// (with a padding of 20 pixels)
 		container.fit(20);
 	});
+
+	//HUD
+    Q.scene("hud", function(stage) {
+        /** Primero, voy a crear un "Container" que contendrá los labels. */
+        var container = stage.insert(new Q.UI.Container({
+            x: Q.width/3,
+            y: Q.height/6,
+            w: Q.width,
+            h: 50,
+            radius: 0
+        }));
+ 
+        /** Ahora voy a insertar los tres labels uno encima de otro. */
+        container.insert(new Q.SCORE({
+            x: container.p.x/2 - container.p.x,
+            y: -20,
+        }));
+
+        container.insert(new Q.LIVES({
+            x: container.p.x/2 + container.p.x,
+            y: -20,
+        }));
+
+    });
+
+/////////////////////////////////PARTES DEL HUD////////////////////////////////////////////////
+    //SCORE
+    Q.UI.Text.extend("SCORE", {
+        init: function(p) {
+            this._super(p, {
+                label: "SCORE: " + Q.state.get("score"),
+                    color: "white",
+                    size: "14"
+                });
+            /** Necesito extender porque quiero escuchar los cambios de la variable en el "State". */
+            Q.state.on("change.score", this, "update_label");
+        },
+ 
+        /**
+        * Con esta función actualizo el label.
+        */
+        update_label: function(score) {
+            this.p.label = "Score: " + score;
+        }
+    });
+
+    //LIVES
+    Q.UI.Text.extend("LIVES", {
+        init: function(p) {
+            this._super(p, {
+                label: "LIVES: " + Q.state.get("lives"),
+                    color: "white",
+                    size: "14"
+                });
+            /** Necesito extender porque quiero escuchar los cambios de la variable en el "State". */
+            Q.state.on("change.lives", this, "update_label");
+        },
+ 
+        /**
+        * Con esta función actualizo el label.
+        */
+        update_label: function(score) {
+            this.p.label = "Lives: " + score;
+        }
+    });
+
 
 ////////////////////////////////BUCLE PRINCIPAL//////////////////////////////////////////////
 
