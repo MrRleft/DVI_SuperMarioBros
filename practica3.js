@@ -27,14 +27,15 @@ var game = function() {
 	
 	//CARGA DE DATOS
 
-	Q.load(["mario_small.png", "mario_small.json", "mainTitle.png", "goomba.png", "goomba.json", "princess.png", "bloopa.png", "bloopa.json"], function() {
+	Q.load(["mario_small.png", "mario_small.json",
+			"mainTitle.png", "goomba.png", "goomba.json",
+			"princess.png", "bloopa.png", "bloopa.json",
+			"coin.png", "coin.json"], function() {
 
 		Q.compileSheets("mario_small.png","mario_small.json");
 		Q.compileSheets("goomba.png", "goomba.json");
 		Q.compileSheets("bloopa.png", "bloopa.json");
-//		Q.sheet("mario_small", "mario_small.png", "mario_small.json");
-//		Q.sheet("goomba", "goomba.png", "goomba.json");
-//		Q.sheet("bloopa", "bloopa.png", "bloopa.json");
+		Q.compileSheets("coin.png", "coin.json");
 
 	});
 
@@ -223,6 +224,37 @@ var game = function() {
 	
 	});
 
+	//SPRITE COIN 
+	Q.Sprite.extend("Coin",{
+
+	 
+		init: function(p) {
+
+		 
+		    this._super(p, {
+		    	sheet: "coin",
+		    	sprite: "Coin_anim",
+		    });
+
+		    this.add('animation');
+
+		    this.on("hit.sprite",function(collision) {
+				if(collision.obj.isA("Mario")) {
+					Q.audio.play("coin.mp3");
+					this.p.vy = 100;
+					this.destroy();
+					}
+			});
+		},
+
+		step: function(dt) {
+
+			this.play("Shine");
+		}
+	
+	});
+	
+
 ////////////////////////////////////ANIMACIONES/////////////////////////////////////////////////////
 	
 	//Animaciones Mario
@@ -245,15 +277,19 @@ var game = function() {
 
 	//Animaciones Bloopa
 	Q.animations('Bloopa_anim', {
-
 		standing: {frames: [0]},
 		floating_up: {frames: [1]},
 		die: {frames: [2,2,2,2], rate:1/2, trigger: "dead"}
 	});
 
+	//Animaciones Coin
+	Q.animations('Coin_anim', {
+		Shine: {frames:[0,1,2], rate: 1/3, loop: true}
+	})
+
 ///////////////////////////////////AUDIOS///////////////////////////////////////////////////////////
 	//CARGA DE AUDIOS
-	Q.load(["music_die.mp3", "music_level_complete.mp3", "music_main.mp3"], function(){
+	Q.load(["music_die.mp3", "music_level_complete.mp3", "music_main.mp3", "coin.mp3"], function(){
 
 
 	});
@@ -275,6 +311,7 @@ var game = function() {
 		var goomba = stage.insert(new Q.Goomba());
 		var Peach = stage.insert(new Q.Peach());
 		var Bloopa = stage.insert(new Q.Bloopa());
+		var Coin = stage.insert(new Q.Coin({x:400,y:420}));
 		stage.add("viewport").follow(Q("Mario").first());
 		stage.viewport.offsetX = -100;
 		stage.viewport.offsetY = 160;
