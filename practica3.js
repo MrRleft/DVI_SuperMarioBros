@@ -47,6 +47,7 @@ var game = function() {
 		init: function(p) {
 
 		 	this.alive = true;
+		 	this.oneUp = true;
 		    this._super(p, {
 		      	
 		      	sheet: "marioR",
@@ -64,7 +65,7 @@ var game = function() {
 				if(collision.obj.isA("Peach")) {
 					Q.audio.play("music_level_complete.mp3");
 					Q.stageScene("endGame",1, { label: "You Won!" });
-					this.destroy;
+					this.destroy();
 				}
 			});
 
@@ -116,6 +117,14 @@ var game = function() {
 
 		step: function(dt) {
 		  	
+		  	if(this.oneUp && Q.state.get("score") % 1000 === 0 && Q.state.get("score") != 0){
+
+		  		Q.state.inc("lives", 1);
+		  		this.oneUp = false;
+		  	}
+		  	else if(!this.oneUp && Q.state.get("score") != 0)
+		  		this.oneUp = true;
+
 		  	if(this.p.y > 620){
 		  		this.fall();
 		  	}
