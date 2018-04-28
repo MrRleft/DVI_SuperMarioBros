@@ -12,7 +12,7 @@ var game = function() {
 		development: true,
 		imagePath: "images/",
 		audioPath: "audio/",
-		audioSupported: [ 'ogg','mp3' ],
+		audioSupported: [ 'mp3' ],
 		dataPath: "data/"
 		}).include("Sprites, Scenes, Input, 2D, Audio, Anim, Touch, UI, TMX").setup({
 			width: 320, // Set the default width to 800 pixels
@@ -28,14 +28,14 @@ var game = function() {
 	//CARGA DE DATOS
 
 	Q.load(["mario_small.png", "mario_small.json",
-			"mainTitle.png", "goomba.png", "goomba.json",
-			"princess.png", "bloopa.png", "bloopa.json",
-			"coin.png", "coin.json"], function() {
+			"mainTitle2.png", "goomba2.png", "goomba.json",
+			"princess2.png", "bloopa2.png", "bloopa.json",
+			"coin2.png", "coin.json", "1up_mushroom.png"], function() {
 
 		Q.compileSheets("mario_small.png","mario_small.json");
-		Q.compileSheets("goomba.png", "goomba.json");
-		Q.compileSheets("bloopa.png", "bloopa.json");
-		Q.compileSheets("coin.png", "coin.json");
+		Q.compileSheets("goomba2.png", "goomba.json");
+		Q.compileSheets("bloopa2.png", "bloopa.json");
+		Q.compileSheets("coin2.png", "coin.json");
 
 	});
 
@@ -48,6 +48,7 @@ var game = function() {
 
 		 	this.alive = true;
 		 	this.oneUp = true;
+		 	this.lastMileStone = 1;
 		    this._super(p, {
 		      	
 		      	sheet: "marioR",
@@ -95,7 +96,7 @@ var game = function() {
 
 		nowDown: function(){
 
-			this.animate({y: this.p.y+200}, 0.8, Q.Easing.Linear, {callback: this.changeToDead });
+			this.animate({y: this.p.y+300}, 0.8, Q.Easing.Linear, {callback: this.changeToDead });
 				
 		},
 
@@ -115,15 +116,25 @@ var game = function() {
 			}
 		},
 
+		extralife: function(){
+
+			Q.state.inc("lives", 1);
+			Q.audio.play("1up.mp3");
+		},
+
 		step: function(dt) {
 		  	
-		  	if(this.oneUp && Q.state.get("score") % 1000 === 0 && Q.state.get("score") != 0){
+		  	if(this.p.y > 520)
+		  		this.stage.follow(Q("Mario").first(), {x: true, y: false});
+		  	if(this.oneUp && Q.state.get("score") / 1000 == this.lastMileStone){
 
-		  		Q.state.inc("lives", 1);
+		  		this.extralife();
 		  		this.oneUp = false;
 		  	}
-		  	else if(!this.oneUp && Q.state.get("score") != 0)
+		  	if(!this.oneUp){
+		  		this.lastMileStone++;
 		  		this.oneUp = true;
+		  	}
 
 		  	if(this.p.y > 620){
 		  		this.fall();
@@ -195,22 +206,48 @@ var game = function() {
 
 		 
 		    this._super(p, {
-		    	asset: "princess.png",
-		    	x: 2000,
-		    	y: 460,
-		    	vx: 100
+		    	asset: "princess2.png",
+		    	
 		    });
 		},
 
-		step: function(dt) {
-
-			
-		}
 		// Listen for a sprite collision, if it's the player,
 		// end the game unless the enemy is hit on top
 	
 	});
 	
+	//SPRITE ONEUP
+	Q.Sprite.extend("OneUp",{
+
+	 
+		init: function(p) {
+
+			this.taken = false;
+		 
+		    this._super(p, {
+		    	asset: "1up_mushroom.png",
+		    	x: 2000,
+		    	y: 430,
+		    	vx: 100,
+		    	sensor: true
+		    });
+
+		    this.on("hit.sprite",function(collision) {
+
+
+				if(collision.obj.isA("Mario")) {
+					if(!this.taken){
+						this.taken = true;
+						collision.obj.extralife();
+						this.destroy();
+					}
+				}
+			});
+
+		}
+
+	
+	});
 	//SPRITE BLOOPA
 	Q.Sprite.extend("Bloopa",{
 
@@ -252,20 +289,24 @@ var game = function() {
 	 
 		init: function(p) {
 
-		 
+		 	this.taken = false;
 		    this._super(p, {
 		    	sheet: "coin",
 		    	sprite: "Coin_anim",
+		    	sensor: true
 		    });
 
 		    this.add('animation, tween');
 
 		    this.on("hit.sprite",function(collision) {
 				if(collision.obj.isA("Mario")) {
-					Q.audio.play("coin.mp3");
-					this.animate({y: p.y-50}, 0.25, Q.Easing.Linear, {callback: this.destroy});
-					Q.state.inc("score", 10);
+					if(!this.taken){
+						this.taken = true;
+						Q.audio.play("coin.mp3");
+						this.animate({y: p.y-50}, 0.25, Q.Easing.Linear, {callback: this.destroy});
+						Q.state.inc("score", 10);
 					}
+				}
 			});
 		},
 
@@ -303,6 +344,7 @@ var game = function() {
 		extend: {
 			DEAD: function() {
 				if(this.alive){
+					Q.audio.play("squish_enemy.mp3");
 					this.alive = false;
 					Q.state.inc("score", 100);
 					this.play("die");
@@ -353,7 +395,7 @@ var game = function() {
 
 ///////////////////////////////////AUDIOS///////////////////////////////////////////////////////////
 	//CARGA DE AUDIOS
-	Q.load(["music_die.mp3", "music_level_complete.mp3", "music_main.mp3", "coin.mp3"], function(){
+	Q.load(["music_die.mp3", "music_level_complete.mp3", "music_main.mp3", "coin.mp3", "1up.mp3", "squish_enemy.mp3"], function(){
 
 	});
 ///////////////////////////////////CARGA NIVELES////////////////////////////////////////////////////
@@ -372,10 +414,22 @@ var game = function() {
 
 		Q.audio.play('music_main.mp3',{ loop: true });
 		var player = stage.insert(new Q.Mario({x: 150,y: 380,}));
-		var goomba = stage.insert(new Q.Goomba());
-		var Peach = stage.insert(new Q.Peach());
-		var Bloopa = stage.insert(new Q.Bloopa());
-		var Coin = stage.insert(new Q.Coin({x:400,y:420}));
+		stage.insert(new Q.Goomba({x: 1500,y: 450}));
+		stage.insert(new Q.Goomba({x: 1450,y: 450}));
+		stage.insert(new Q.Goomba({x: 600,y: 450}));
+		stage.insert(new Q.Goomba({x: 850,y: 450}));
+		stage.insert(new Q.OneUp({x: 26,y: 528}));
+		stage.insert(new Q.Peach({x: 2000,y: 450}));
+		stage.insert(new Q.Bloopa({x:700,y:420}));
+		stage.insert(new Q.Bloopa({x:1300,y:45}));
+		stage.insert(new Q.Bloopa({x:600,y:420}));
+		stage.insert(new Q.Bloopa({x:800,y:420}));
+		stage.insert(new Q.Coin({x:400,y:420}));
+		stage.insert(new Q.Coin({x:430,y:420}));
+		stage.insert(new Q.Coin({x:460,y:420}));
+		stage.insert(new Q.Coin({x:500,y:420}));
+		stage.insert(new Q.Coin({x:1500,y:480}));
+		stage.insert(new Q.Coin({x:1530,y:480}));
 		stage.add("viewport").follow(Q("Mario").first());
 		stage.viewport.offsetX = -100;
 		stage.viewport.offsetY = 160;
@@ -389,7 +443,7 @@ var game = function() {
 		var button = new Q.UI.Button({
 			x: Q.width/2, 
 			y: Q.height/2,
-			asset: "mainTitle.png"
+			asset: "mainTitle2.png"
 
 		})
 		stage.insert(button);

@@ -2,10 +2,10 @@
 <!DOCTYPE map SYSTEM "http://mapeditor.org/dtd/1.0/map.dtd">
 <map version="1.0" orientation="orthogonal" width="60" height="18" tilewidth="34" tileheight="34">
  <tileset firstgid="1" name="tiles" tilewidth="34" tileheight="34">
-  <image source="../images/tiles.png" width="256" height="256"/>
+  <image source="../images/tiles2.png" width="256" height="256"/>
  </tileset>
  <imagelayer name="background" width="60" height="18">
-  <image source="../images/bg.png"/>
+  <image source="../images/bg2.png"/>
  </imagelayer>
  <layer name="Collision" width="60" height="18">
   <properties>
