@@ -131,7 +131,7 @@ var game = function() {
 		  		this.extralife();
 		  		this.oneUp = false;
 		  	}
-		  	if(!this.oneUp){
+		  	else if(!this.oneUp){
 		  		this.lastMileStone++;
 		  		this.oneUp = true;
 		  	}
@@ -453,6 +453,7 @@ var game = function() {
 			Q.stageScene("level1");
 			Q.stageScene("hud", 3);
 		});
+
 
 	});
 
